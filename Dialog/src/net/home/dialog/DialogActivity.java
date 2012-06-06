@@ -9,9 +9,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import android.app.ProgressDialog;
+import android.os.Handler;
+import android.os.Message;
+
 public class DialogActivity extends Activity {
 	CharSequence[] items = { "Google", "Apple", "Microsoft" };
 	boolean[] itemsChecked = new boolean[items.length];
+
+	private ProgressDialog _progressDialog;
+	private int _progress = 0;
+	private Handler _progressHandler;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -22,9 +30,26 @@ public class DialogActivity extends Activity {
 		Button btn = (Button) findViewById(R.id.btn_dialog);
 		btn.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				showDialog(0);
+				// showDialog(0);
+				showDialog(1);
+				_progress = 0;
+				_progressDialog.setProgress(0);
+				_progressHandler.sendEmptyMessage(0);
 			}
 		});
+
+		_progressHandler = new Handler() {
+			public void handleMessage(Message msg) {
+				super.handleMessage(msg);
+				if (_progress >= 100) {
+					_progressDialog.dismiss();
+				} else {
+					_progress++;
+					_progressDialog.incrementProgressBy(1);
+					_progressHandler.sendEmptyMessageDelayed(0, 100);
+				}
+			}
+		};
 	}
 
 	@Override
@@ -68,6 +93,31 @@ public class DialogActivity extends Activity {
 											Toast.LENGTH_SHORT).show();
 								}
 							}).create();
+		case 1:
+			_progressDialog = new ProgressDialog(this);
+			_progressDialog.setIcon(R.drawable.ic_launcher);
+			_progressDialog.setTitle("Downloading files...");
+			_progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+			_progressDialog.setButton(DialogInterface.BUTTON_POSITIVE, "Hide",
+					new DialogInterface.OnClickListener() {
+
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
+							Toast.makeText(getBaseContext(), "Hide clicked!",
+									Toast.LENGTH_SHORT).show();
+						}
+					});
+			_progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
+					"Cancle", new DialogInterface.OnClickListener() {
+
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
+							Toast.makeText(getBaseContext(), "Cancle clicked!",
+									Toast.LENGTH_SHORT).show();
+
+						}
+					});
+			return _progressDialog;
 		}
 		return null;
 	}
